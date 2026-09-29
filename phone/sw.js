@@ -1,6 +1,6 @@
 // Offline support: the app shell is precached; each sprite file (~135 KB) is
 // cached the first time it is shown, so the pets you've met work offline.
-const SHELL = 'tamapoke-shell-v2';
+const SHELL = 'tamapoke-shell-v3';
 const SPRITES = 'tamapoke-sprites-v1';
 const SHELL_FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css', 'fonts/PressStart2P-Regular.ttf',
@@ -9,8 +9,13 @@ const SHELL_FILES = [
   '../tools/sdcard/mons/thumbs.bin',
 ];
 
+// GitHub Pages lets browsers keep files for 10 minutes, so both the precache and
+// the network-first fetch skip the HTTP cache: otherwise a fresh index.html can
+// end up running next to a stale app.js.
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(SHELL).then((c) => c.addAll(SHELL_FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(SHELL)
+    .then((c) => c.addAll(SHELL_FILES.map((f) => new Request(f, { cache: 'reload' }))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -37,7 +42,8 @@ self.addEventListener('fetch', (e) => {
   }
   // app shell: network first (so updates arrive), cache when offline
   e.respondWith(
-    fetch(e.request)
+    // by URL: a navigation Request can't be re-issued with new options
+    fetch(e.request.url, { cache: 'no-cache' })
       .then((res) => {
         if (res.ok) {
           const copy = res.clone();

@@ -64,6 +64,7 @@ const PHONE = {
   CANCEL: ['Cancelar', 'Cancel', 'Annuler', 'Abbrechen', 'Annulla', 'Cancelar', 'キャンセル', '취소'],
   RELEASE: ['Soltar', 'Release', 'Relâcher', 'Freilassen', 'Libera', 'Soltar', 'にがす', '놓아주기'],
   TAP_BALL: ['Toca la pelota!', 'Tap the ball!', 'Touche la balle !', 'Tipp den Ball!', 'Tocca la palla!', 'Toque na bola!', 'ボールをタップ!', '공을 탭!'],
+  WAKE_FIRST: ['Despiértalo primero (Luz)', 'Wake it up first (Light)', "Réveille-le d'abord (Lumière)", 'Erst aufwecken (Licht)', 'Prima sveglialo (Luce)', 'Acorde-o primeiro (Luz)', 'まず おこしてね(でんき)', '먼저 깨워 주세요 (불)'],
   NOT_SEEN: ['Sin registrar', 'Not seen yet', 'Pas encore vu', 'Noch nicht gesehen', 'Non ancora visto', 'Ainda não visto', 'みつけていない', '아직 못 봤어요'],
 };
 export const P = (key) => PHONE[key][lang];

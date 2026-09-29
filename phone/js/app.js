@@ -631,7 +631,7 @@ function renderStats(force) {
       statRow(T(S.STAT_SPE), pet.speStat(), 260, 'var(--warn)') +
       statRow(T(S.STAT_WGT), pet.weight, 100, 'var(--brown)') +
       `<button class="btn bad" data-act="train"${pet.sleeping || pet.ceremony ? ' disabled' : ''}>${esc(T(S.TRAIN_STR))}</button>` +
-      `<p class="small">${esc(fmt(T(S.RECORD_FMT), pet.strHi))}</p></div>` +
+      `<p class="small">${esc(pet.sleeping ? P('WAKE_FIRST') : fmt(T(S.RECORD_FMT), pet.strHi))}</p></div>` +
 
       `<div class="card"><h2>${esc(T(S.PROGRESS))}</h2><div class="lv-big">${esc(fmt(T(S.LVL_FMT), pet.level()))}</div>` +
       `<div class="track"><div class="fill" style="width:${Math.round((into * 100) / MINUTES_PER_LEVEL)}%"></div></div>` +

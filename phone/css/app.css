@@ -234,6 +234,7 @@ body.playing #panel, body.playing #tabs, body.playing #hud { display: none; }
 .btn.bad { background: var(--bad); color: #fff; }
 .btn.warn { background: var(--warn); color: #292831; }
 .btn.flat { background: var(--track); }
+.btn:disabled { opacity: .35; box-shadow: none; cursor: default; }
 .btn.ghost { background: none; box-shadow: none; border-style: dashed; color: var(--muted); }
 
 /* stats: profile */

@@ -4,7 +4,7 @@
 // even while the app is closed. Coming back cancels whatever is still pending.
 
 // the deployed push-worker; empty = notifications hidden in Settings
-export const PUSH_URL = '';
+export const PUSH_URL = 'https://tamapoke-push.challe-1992.workers.dev';
 
 const KEY = 'tamapoke.push';
 const HUNGRY = 25; // statusMsg()'s threshold for every need

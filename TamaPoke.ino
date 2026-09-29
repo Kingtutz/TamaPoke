@@ -1490,7 +1490,7 @@ void drawClockBtn(int x, int y, const char *l) {
 #define LANG_PILL_H 30
 #define LANG_PILL_X 336          // pildora de idioma (cicla LANG_COUNT al tocar)
 #define LANG_PILL_W 96
-static const char *const LANG_CODES[LANG_COUNT] = { "ES", "EN", "FR", "DE", "IT", "PT", "JA", "KO" };
+static const char *const LANG_CODES[LANG_COUNT] = { "ES", "EN", "FR", "DE", "IT", "PT", "JA", "KO", "SV" };
 
 void renderClock() {
   gfx->fillScreen(RGB565_BLACK);

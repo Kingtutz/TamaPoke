@@ -7,6 +7,10 @@ cd "$(dirname "$0")"
 
 fail=0
 
+# python3 en Linux/macOS; en Windows "python3" suele ser el acceso directo de la
+# Microsoft Store (no ejecuta nada), asi que se usa el primero que funcione
+if python3 -c "" >/dev/null 2>&1; then PY=python3; else PY=python; fi
+
 echo "== logica del firmware (pet.cpp / i18n.cpp / dex.h) =="
 make --no-print-directory run || fail=1
 
@@ -18,7 +22,7 @@ fi
 
 echo
 echo "== herramientas y ficheros generados (tools/) =="
-python3 test_tools.py || fail=1
+"$PY" test_tools.py || fail=1
 
 echo
 if [[ $fail -eq 0 ]]; then

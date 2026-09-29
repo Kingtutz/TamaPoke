@@ -272,6 +272,36 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "스타터를 선택하세요",
     "스프라이트 없음", "SD 카드에 넣어주세요",
   },
+  // ---------------- SV ----------------
+  // Los nombres de Pokemon se quedan en ingles (son los oficiales en Suecia).
+  {
+    "Utvecklas!", "Mums mums!", "Gillar det!", "Hungrig!", "Beh\224ver ett bad!",
+    "Utmattad...", "Ledsen...", "Lite rund...", "Den \204r SHINY!!", "Den \204r glad",
+    "TACK! Farv\204l", "Den rymde...", "Hej d\206! Den vinkar...",
+    "\216GG", "Legendariskt \204gg!?", "Rart \204gg!", "Tryck p\206 \204gget...", "Det r\224r sig!", "Snart kl\204ckt!",
+    "POKEDEX %u/151",
+    "%s%s Lv.%u",
+    "Sl\204ppa %s?", "JA", "NEJ",
+    "%u SLAG", "STY +%u", "NYTT REKORD!", "REKORD: %u", "SL\217 SNABBT!",
+    "PO\216NG: %u", "S\206 roligt!", "+gl\204dje",
+    "ST\216LL KLOCKAN", "TIM", "MIN", "svep upp: avbryt", "Spr\206k",
+    "MEDALJ!", "GRYMT!", "%u DAGAR I RAD!",
+    "SVIT %u  rekord %u", "BAND", "B\216R ???", "R\231TT B\216R", "BL\217TT B\216R", "GR\231NT B\216R",
+    "%s   \216LDER %lud", "tryck p\206 namnet: byt",
+    "STRID", "ATK", "F\231R", "FRT", "VKT", "TR\216NA STYRKA",
+    "MEDALJER %d/%d", "tryck: tillbaka",
+    "NAMN:", "tryck: tillbaka",
+    "MAT", "GL\216D", "ENE", "HYG",
+    "REK %u",
+    "FRAMSTEG", "Lv.%u", "%u min till Lv.%u", "UTVECKLING", "Slutform",
+    "Redo att utvecklas!", "Allt >=40 f\224r att utvecklas",
+    "Utvecklas om %u lv.", "Misstag: %u",
+    "LJUD", "TYST",
+    "UTVECKLA!", "%s vill s\204ga n\206got...", "%s k\204nner sig \224vergiven...",
+    "Utvecklas?", "Beh\206ll formen", "S\204ga hej d\206?", "Hej d\206", "Stanna ihop",
+    "V\204lj din startare",
+    "Inga sprites", "L\204gg dem p\206 SD-kortet",
+  },
 };
 
 // Nombres de medalla en sus tres longitudes [idioma][medalla].
@@ -284,6 +314,7 @@ static const char *const MED_NAME[LANG_COUNT][MED_COUNT] = {
   { "Niv.10", "Niv.25", "Niv.50", "BAGA", "SEQ 7", "LACO", "FORMA MAX", "EM FORMA" },
   { "Lv.10", "Lv.25", "Lv.50", "きのみ", "7にち", "なかよし", "さいしゅう", "げんき" },
   { "Lv.10", "Lv.25", "Lv.50", "열매", "연속 7일", "유대", "최고 컨디션", "건강함" },
+  { "Lv.10", "Lv.25", "Lv.50", "SMAK", "7 I RAD", "BAND", "SLUTFORM", "I FORM" },
 };
 static const char *const MED_LBL[LANG_COUNT][MED_COUNT] = {
   { "Nv10", "Nv25", "Nv50", "BAYA", "7DIAS", "VINC", "TOPE", "SANO" },
@@ -294,6 +325,7 @@ static const char *const MED_LBL[LANG_COUNT][MED_COUNT] = {
   { "Niv10", "Niv25", "Niv50", "BAGA", "7DIAS", "LACO", "MAX", "FIT" },
   { "Lv10", "Lv25", "Lv50", "きのみ", "7にち", "なかよし", "しんか", "げんき" },
   { "Lv10", "Lv25", "Lv50", "열매", "7일", "유대", "최고", "건강" },
+  { "Lv10", "Lv25", "Lv50", "SMAK", "7DAGAR", "BAND", "SLUT", "FORM" },
 };
 static const char *const MED_DSC[LANG_COUNT][MED_COUNT] = {
   { "NIVEL 10", "NIVEL 25", "NIVEL 50", "BAYA HALLADA",
@@ -312,6 +344,8 @@ static const char *const MED_DSC[LANG_COUNT][MED_COUNT] = {
     "7にち れんぞく", "なかよし MAX", "さいしゅうしんか", "げんきいっぱい" },
   { "레벨 10", "레벨 25", "레벨 50", "열매 발견",
     "연속 7일", "유대감 최대", "최종 진화", "건강함" },
+  { "LEVEL 10", "LEVEL 25", "LEVEL 50", "SMAK HITTAD",
+    "7 DAGAR I RAD", "MAX BAND", "SLUTFORM", "I TOPPFORM" },
 };
 
 const char *T(StrId id) { return STRINGS[gLang][id]; }

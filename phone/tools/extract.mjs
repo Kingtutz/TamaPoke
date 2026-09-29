@@ -103,11 +103,16 @@ const i18nH = src('i18n.h');
 const enumBody = i18nH.slice(i18nH.indexOf('enum StrId'), i18nH.indexOf('STR_COUNT'));
 const strIds = [...enumBody.replace(/\/\/.*$/gm, '').matchAll(/\bS_[A-Z0-9_]+/g)].map((m) => m[0]);
 const i18nC = src('i18n.cpp');
+const langBody = i18nH.slice(i18nH.indexOf('enum Lang'), i18nH.indexOf('LANG_COUNT'));
+const langCodes = [...langBody.matchAll(/\bLANG_([A-Z]{2})\b/g)].map((m) => m[1]);
 const strings = chunk(cTokens(arrayBody(i18nC, 'STRINGS[')), strIds.length);
-if (strings.length !== 8 || strings.some((r) => r.length !== strIds.length))
+if (strings.length !== langCodes.length || strings.some((r) => r.length !== strIds.length))
   throw new Error('STRINGS shape mismatch');
 const medals = {};
-for (const k of ['MED_NAME', 'MED_LBL', 'MED_DSC']) medals[k] = chunk(cTokens(arrayBody(i18nC, k + '[')), 8);
+for (const k of ['MED_NAME', 'MED_LBL', 'MED_DSC']) {
+  medals[k] = chunk(cTokens(arrayBody(i18nC, k + '[')), 8);
+  if (medals[k].length !== langCodes.length) throw new Error(k + ' shape mismatch');
+}
 
 // ---- species.h: palette + char-map sprites ----
 const spH = src('species.h');
@@ -135,4 +140,4 @@ export const PALETTE = ${JSON.stringify(palette)};
 export const MAPS = ${JSON.stringify(maps)};
 `;
 writeFileSync(join(root, 'phone', 'js', 'data.js'), out);
-console.log(`data.js: ${dex.length - 1} species, ${strIds.length} strings x 8 langs, ${Object.keys(maps).length} maps, fw ${fw}`);
+console.log(`data.js: ${dex.length - 1} species, ${strIds.length} strings x ${langCodes.length} langs (${langCodes.join(" ")}), ${Object.keys(maps).length} maps, fw ${fw}`);

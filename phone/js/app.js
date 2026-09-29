@@ -17,7 +17,7 @@ import {
   UI_BAR_OK, UI_BAR_WARN, UI_BAR_BAD, UI_WHITE, UI_BG_DAY, mapDataUrl, cssColor,
 } from './gfx.js';
 import {
-  S, T, P, fmt, dexName, medalName, medalDesc, LANG_CODES, LANG_NAMES, getLang, setLang, isCjk,
+  S, T, P, fmt, dexName, medalName, medalDesc, LANG_CODES, LANG_NAMES, getLang, setLang, isCjk, isCjkLang,
 } from './i18n.js';
 import { sfxPlay, audioUnlock, audioEnabled, audioSetEnabled, audioSetSleeping } from './audio.js';
 import {
@@ -691,7 +691,7 @@ function renderSettings() {
     `<button class="switch" role="switch" aria-checked="${snd}" aria-label="${esc(P('SOUND'))}" data-act="sound"></button></div></div>` +
     notify +
     `<div class="card"><h2>${esc(P('LANGUAGE'))}</h2><div class="langs">` +
-    LANG_NAMES.map((n, i) => `<button class="btn${i >= 6 ? ' cjk' : ''}" data-lang="${i}" aria-pressed="${i === getLang()}">${n}</button>`).join('') +
+    LANG_NAMES.map((n, i) => `<button class="btn${isCjkLang(i) ? ' cjk' : ''}" data-lang="${i}" aria-pressed="${i === getLang()}">${n}</button>`).join('') +
     '</div></div>' +
     `<p class="small" style="text-align:center">TamaPoke v${FW_VERSION} (phone)</p>`;
 }

@@ -3,7 +3,7 @@
 A port of the firmware to a web app you can add to your iPhone/Android home
 screen. It runs full-screen and works offline. The game rules are the same
 (`pet.cpp` ported 1:1), and so are the screens: starter pick, Pokédex, stat
-card, ball minigame, punching bag, bath, evolution and farewell. All 8
+card, ball minigame, punching bag, bath, evolution and farewell. All 9
 languages and the square-wave sound effects are included.
 
 The layout is built for a portrait phone instead of the round 466×466 watch

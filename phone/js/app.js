@@ -847,6 +847,24 @@ function renderStage() {
 
 // ---------- ball minigame ----------
 const BALL_R = 24;
+// Difficulty (phone only; the firmware's values are in the comments). Tuned
+// harder than the device: a tighter hit area, a heavier ball and a ramp that
+// keeps going: the time between taps goes from ~2.3 s at the start to ~1.7 s
+// from score 25 (the firmware stays at ~2.8 s until 16, then ~2.2 s).
+const GAME = {
+  hitR: 52,          // tap distance that counts as a hit (fw 74)
+  grav0: 0.5,        // gravity at score 0 (fw 0.4)
+  gravStep: 0.02,    // extra gravity per point (fw 0.013)
+  gravMax: 1.0,      // (fw 0.8)
+  lift0: 7.0,        // upward kick per tap (fw 6.6)
+  liftStep: 0.15,    // extra kick per point (fw 0.22)
+  liftCapScore: 20,  // the kick stops growing here (fw 16, then a flat +3.5)
+  side0: 2.0,        // sideways speed of a new ball (fw 1.6)
+  sideStep: 0.08,    // (fw 0.05)
+  sideMax: 5.0,      // (fw 4)
+  spin: 0.14,        // how much an off-centre tap pushes it sideways (fw 0.12)
+  spinMax: 8.0,      // (fw 6.5)
+};
 function startGame() {
   if (pet.isEgg() || pet.sleeping || pet.ceremony) return;
   gameOpen = true;
@@ -863,8 +881,7 @@ function startGame() {
 function respawnBall() {
   ballX = 150 + random(166);
   ballY = 150;
-  let sp = 1.6 + gameScore * 0.05;
-  if (sp > 4) sp = 4;
+  const sp = Math.min(GAME.side0 + gameScore * GAME.sideStep, GAME.sideMax);
   ballVX = random(2) ? sp : -sp;
   ballVY = 0;
 }
@@ -872,14 +889,13 @@ function respawnBall() {
 function gameTap(x, y) {
   if (gameOverUntil) return;
   const dx = ballX - x, dy = ballY - y;
-  if (dx * dx + dy * dy < 74 * 74) {
+  if (dx * dx + dy * dy < GAME.hitR * GAME.hitR) {
     gameScore++;
     sfxPlay(SFX_PLAY);
-    const lift = 6.6 + (gameScore > 16 ? 3.5 : gameScore * 0.22);
-    ballVY = -lift;
-    ballVX += dx * 0.12;
-    if (ballVX > 6.5) ballVX = 6.5;
-    if (ballVX < -6.5) ballVX = -6.5;
+    ballVY = -(GAME.lift0 + Math.min(gameScore, GAME.liftCapScore) * GAME.liftStep);
+    ballVX += dx * GAME.spin;
+    if (ballVX > GAME.spinMax) ballVX = GAME.spinMax;
+    if (ballVX < -GAME.spinMax) ballVX = -GAME.spinMax;
     hitX = ballX;
     hitY = ballY;
     hitTime = millis();
@@ -891,8 +907,7 @@ function stepGame() {
   let k = lastGameStep ? (now - lastGameStep) / 85 : 1;
   if (k > 3) k = 3;
   lastGameStep = now;
-  let grav = 0.4 + gameScore * 0.013;
-  if (grav > 0.8) grav = 0.8;
+  const grav = Math.min(GAME.grav0 + gameScore * GAME.gravStep, GAME.gravMax);
   ballVY += grav * k;
   ballX += ballVX * k;
   ballY += ballVY * k;
@@ -1374,7 +1389,10 @@ document.addEventListener('visibilitychange', () => (document.hidden ? onHide() 
 window.addEventListener('pagehide', onHide);
 
 // debug hooks for the browser console (like the firmware's serial commands)
-window.tamapoke = { pet, sfxPlay };
+window.tamapoke = {
+  pet, sfxPlay,
+  game: () => ({ open: gameOpen, over: !!gameOverUntil, x: ballX, y: ballY, score: gameScore, misses: gameMisses, W, H }),
+};
 
 await document.fonts.load('12px "PressStart2P"').catch(() => {});
 setup();

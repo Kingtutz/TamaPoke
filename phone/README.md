@@ -1,11 +1,17 @@
 # TamaPoke for phones (PWA)
 
 A port of the firmware to a web app you can add to your iPhone/Android home
-screen. It runs full-screen and works offline. It keeps the same round
-466×466 screen, the same game rules (`pet.cpp` ported 1:1) and the same
-screens: starter pick, Pokédex gallery, stat card, ball minigame, punching bag,
-bath, evolution and farewell. All 8 languages and the square-wave sound effects
-are included.
+screen. It runs full-screen and works offline. The game rules are the same
+(`pet.cpp` ported 1:1), and so are the screens: starter pick, Pokédex, stat
+card, ball minigame, punching bag, bath, evolution and farewell. All 8
+languages and the square-wave sound effects are included.
+
+The layout is built for a portrait phone instead of the round 466×466 watch
+screen. The pet's world (scene, sprite, egg, bath, evolution, ceremonies and
+the mini-games) is still drawn with the firmware's pixel code on a canvas. That
+canvas fills the width of the screen and gets taller or shorter with the phone.
+Everything around it is HTML: the needs bars, the action buttons, the dialogs
+and a tab bar for Pokédex, Stats and Settings.
 
 ## Play it
 
@@ -19,21 +25,21 @@ card) and are cached for offline use the first time each one is shown.
 
 ## Controls
 
-The same gestures as the device:
-
-| Gesture | Action |
+| Where | Action |
 |---|---|
-| tap buttons | feed / minigame / sleep / bath |
-| tap the pet | pet it |
-| swipe ← / → | Pokédex gallery (pages), swipe right on page 1 to exit |
-| swipe ↑ | pet card (swipe ←/→ for 4 pages, tap name to rename) |
-| swipe ↓ | settings: sound, language |
-| hold the pet 3 s | release dialog |
+| Home: Feed / Play / Light / Bath | Feed opens a berry/candy menu; Play starts the ball game |
+| Home: tap the pet (or the egg) | pet it (hatch it) |
+| Home: hold the pet 3 s | release dialog (also: Stats → Release) |
+| Pokédex tab | scrolling grid of all 151; tap one for its sprite and base stats |
+| Stats tab | profile, rename, bond, battle stats + Train strength, progress, medals |
+| Settings tab | sound, language |
+| ✕ in a mini-game | leave it without a result |
 
 ## Differences from the device
 
-- Time comes from the phone's clock, so the settings screen shows the time
-  instead of editing it.
+- Time comes from the phone's clock, so there is no clock editor.
+- Tabs and buttons replace the device's swipe gestures, and renaming uses the
+  phone's own keyboard.
 - Closing or backgrounding the app counts as "powered off": on return the
   firmware's gentle offline progression is applied (bars floor at 15, no
   slip-ups, capped at 2 weeks).

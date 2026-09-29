@@ -46,7 +46,7 @@ export class PmdMon {
     this.loaded = false;
     this.failed = false;
     this.key = '';
-    this.acts = Array.from({ length: PMD_NACTS }, () => ({ w: 0, h: 0, frames: 0, base: 0, ms: [], data: null, off: 0 }));
+    this.acts = Array.from({ length: PMD_NACTS }, () => ({ w: 0, h: 0, frames: 0, base: 0, top: 0, ms: [], data: null, off: 0 }));
     this.pal = [];
     this.cache = new Map();
     this.token = (this.token || 0) + 1;
@@ -96,16 +96,20 @@ export class PmdMon {
       }
       a.data = b; a.off = p;
       p += w * h * nf;
-      let base = 1;
+      // lowest and highest opaque rows over all frames: feet line, and the
+      // visible height (frames carry a lot of empty margin)
+      let base = 1, top = h - 1;
+      const rowHas = (fo, r) => {
+        for (let c = 0; c < w; c++) if (b[fo + r * w + c] !== 0xff) return true;
+        return false;
+      };
       for (let f = 0; f < nf; f++) {
         const fo = a.off + f * w * h;
-        for (let r = h - 1; r >= 0; r--) {
-          let any = false;
-          for (let c = 0; c < w && !any; c++) if (b[fo + r * w + c] !== 0xff) any = true;
-          if (any) { if (r + 1 > base) base = r + 1; break; }
-        }
+        for (let r = h - 1; r >= 0; r--) if (rowHas(fo, r)) { if (r + 1 > base) base = r + 1; break; }
+        for (let r = 0; r < h; r++) if (rowHas(fo, r)) { if (r < top) top = r; break; }
       }
       a.base = base;
+      a.top = Math.min(top, base - 1);
     }
     this.loaded = true;
     return true;

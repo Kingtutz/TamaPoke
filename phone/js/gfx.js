@@ -1,5 +1,6 @@
-// Minimal Arduino_GFX look-alike on a 466x466 canvas, so TamaPoke.ino's
-// drawing code ports line by line (RGB565 colors, top-left text cursor).
+// Minimal Arduino_GFX look-alike, so TamaPoke.ino's drawing code ports line by
+// line (RGB565 colors, top-left text cursor). The canvas is always 466 logical
+// units wide; its height (gfx.h) follows the element's aspect ratio.
 import { rgb565ToCss, INK_K } from './sprites.js';
 import { MAPS, PALETTE } from './data.js';
 
@@ -36,22 +37,25 @@ export class Gfx {
     this.cy = 0;
     this.color = UI_INK;
     this.cjk = false;
-    this.mapCache = new Map();
+    this.h = W;
     this.resize();
   }
 
   resize() {
-    const cssW = this.canvas.getBoundingClientRect().width || W;
-    const k = Math.max(1, (cssW * (window.devicePixelRatio || 1)) / W);
-    const px = Math.round(W * k);
-    if (this.canvas.width !== px) {
-      this.canvas.width = this.canvas.height = px;
+    const r = this.canvas.getBoundingClientRect();
+    if (!r.width || !r.height) return; // hidden: keep the last size
+    this.h = Math.max(240, Math.round((W * r.height) / r.width));
+    const k = (r.width * (window.devicePixelRatio || 1)) / W;
+    const pw = Math.round(W * k), ph = Math.round(this.h * k);
+    if (this.canvas.width !== pw || this.canvas.height !== ph) {
+      this.canvas.width = pw;
+      this.canvas.height = ph;
     }
-    this.ctx.setTransform(px / W, 0, 0, px / W, 0, 0);
+    this.ctx.setTransform(pw / W, 0, 0, pw / W, 0, 0);
     this.ctx.imageSmoothingEnabled = false;
   }
 
-  fillScreen(c) { this.fillRect(0, 0, W, W, c); }
+  fillScreen(c) { this.fillRect(0, 0, W, this.h, c); }
   fillRect(x, y, w, h, c) { this.ctx.fillStyle = css(c); this.ctx.fillRect(x, y, w, h); }
 
   rr(x, y, w, h, r) {
@@ -131,24 +135,7 @@ export class Gfx {
   // ---- bitmaps ----
   // char-map sprite from species.h ('.' = transparent), scaled by s
   drawMap(name, x, y, s, sil) {
-    const key = name + (sil ? '#' : '');
-    let cv = this.mapCache.get(key);
-    if (!cv) {
-      const rows = MAPS[name];
-      cv = document.createElement('canvas');
-      cv.width = rows[0].length;
-      cv.height = rows.length;
-      const c = cv.getContext('2d');
-      rows.forEach((row, r) => {
-        for (let i = 0; i < row.length; i++) {
-          const ch = row[i];
-          if (ch === '.') continue;
-          c.fillStyle = css(sil ? INK_K : PALETTE[ch] ?? 0);
-          c.fillRect(i, r, 1, 1);
-        }
-      });
-      this.mapCache.set(key, cv);
-    }
+    const cv = mapCanvas(name, sil);
     this.blit(cv, x, y, cv.width * s, cv.height * s);
   }
   blit(cv, x, y, w, h) {
@@ -156,3 +143,29 @@ export class Gfx {
     this.ctx.drawImage(cv, Math.round(x), Math.round(y), w, h);
   }
 }
+
+// species.h char maps rendered once to 1:1 canvases (also used as HTML icons)
+const mapCache = new Map();
+export function mapCanvas(name, sil = false) {
+  const key = name + (sil ? '#' : '');
+  let cv = mapCache.get(key);
+  if (!cv) {
+    const rows = MAPS[name];
+    cv = document.createElement('canvas');
+    cv.width = rows[0].length;
+    cv.height = rows.length;
+    const c = cv.getContext('2d');
+    rows.forEach((row, r) => {
+      for (let i = 0; i < row.length; i++) {
+        const ch = row[i];
+        if (ch === '.') continue;
+        c.fillStyle = css(sil ? INK_K : PALETTE[ch] ?? 0);
+        c.fillRect(i, r, 1, 1);
+      }
+    });
+    mapCache.set(key, cv);
+  }
+  return cv;
+}
+export const mapDataUrl = (name) => mapCanvas(name).toDataURL();
+export const cssColor = css;

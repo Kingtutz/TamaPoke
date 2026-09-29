@@ -43,3 +43,28 @@ export function fmt(f, ...args) {
     return v;
   });
 }
+
+// Phone-only labels (tabs, buttons) that the firmware never needed.
+// Order follows LANG_CODES: ES EN FR DE IT PT JA KO.
+const PHONE = {
+  HOME: ['Inicio', 'Home', 'Accueil', 'Start', 'Home', 'Início', 'ホーム', '홈'],
+  DEX: ['Pokédex', 'Pokédex', 'Pokédex', 'Pokédex', 'Pokédex', 'Pokédex', 'ずかん', '도감'],
+  STATS: ['Ficha', 'Stats', 'Fiche', 'Profil', 'Scheda', 'Ficha', 'ステータス', '상태'],
+  SETTINGS: ['Ajustes', 'Settings', 'Réglages', 'Optionen', 'Opzioni', 'Ajustes', 'せってい', '설정'],
+  FEED: ['Comer', 'Feed', 'Manger', 'Füttern', 'Cibo', 'Comer', 'ごはん', '밥'],
+  PLAY: ['Jugar', 'Play', 'Jouer', 'Spielen', 'Gioca', 'Jogar', 'あそぶ', '놀기'],
+  LIGHT: ['Luz', 'Light', 'Lumière', 'Licht', 'Luce', 'Luz', 'でんき', '불'],
+  BATH: ['Baño', 'Bath', 'Bain', 'Baden', 'Bagno', 'Banho', 'おふろ', '목욕'],
+  CANDY: ['Caramelo', 'Candy', 'Bonbon', 'Bonbon', 'Caramella', 'Doce', 'キャンディ', '사탕'],
+  SOUND: ['Sonido', 'Sound', 'Son', 'Ton', 'Suono', 'Som', 'サウンド', '소리'],
+  LANGUAGE: ['Idioma', 'Language', 'Langue', 'Sprache', 'Lingua', 'Idioma', 'げんご', '언어'],
+  ON: ['Sí', 'On', 'Oui', 'An', 'Sì', 'Sim', 'オン', '켜기'],
+  OFF: ['No', 'Off', 'Non', 'Aus', 'No', 'Não', 'オフ', '끄기'],
+  RENAME: ['Renombrar', 'Rename', 'Renommer', 'Umbenennen', 'Rinomina', 'Renomear', 'なまえをかえる', '이름 변경'],
+  CANCEL: ['Cancelar', 'Cancel', 'Annuler', 'Abbrechen', 'Annulla', 'Cancelar', 'キャンセル', '취소'],
+  RELEASE: ['Soltar', 'Release', 'Relâcher', 'Freilassen', 'Libera', 'Soltar', 'にがす', '놓아주기'],
+  TAP_BALL: ['Toca la pelota!', 'Tap the ball!', 'Touche la balle !', 'Tipp den Ball!', 'Tocca la palla!', 'Toque na bola!', 'ボールをタップ!', '공을 탭!'],
+  NOT_SEEN: ['Sin registrar', 'Not seen yet', 'Pas encore vu', 'Noch nicht gesehen', 'Non ancora visto', 'Ainda não visto', 'みつけていない', '아직 못 봤어요'],
+};
+export const P = (key) => PHONE[key][lang];
+export const LANG_NAMES = ['Español', 'English', 'Français', 'Deutsch', 'Italiano', 'Português', '日本語', '한국어'];

@@ -1,0 +1,17 @@
+name = "tamapoke-push"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# every five minutes: send the reminders that are due
+[triggers]
+crons = ["*/5 * * * *"]
+
+# subscriptions + their pending reminders (id from: npx wrangler kv namespace create SUBS)
+[[kv_namespaces]]
+binding = "SUBS"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[vars]
+VAPID_PUBLIC = "BHfmT9xGKrR1kBFaMiNvr9oJrcYvHj2VaUj_1tz4GU6iTFqzGdK9VUsHhDwWjRVEOJOLJeaDg_mTbIsmfkf974Y"
+VAPID_SUBJECT = "https://kingtutz.github.io/TamaPoke/"
+# VAPID_PRIVATE_JWK is a secret: npx wrangler secret put VAPID_PRIVATE_JWK

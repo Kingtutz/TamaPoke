@@ -1,11 +1,11 @@
 // Offline support: the app shell is precached; each sprite file (~135 KB) is
 // cached the first time it is shown, so the pets you've met work offline.
-const SHELL = 'tamapoke-shell-v3';
+const SHELL = 'tamapoke-shell-v4';
 const SPRITES = 'tamapoke-sprites-v1';
 const SHELL_FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css', 'fonts/PressStart2P-Regular.ttf',
   'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png',
-  'js/app.js', 'js/audio.js', 'js/data.js', 'js/gfx.js', 'js/i18n.js', 'js/pet.js', 'js/sprites.js',
+  'js/app.js', 'js/audio.js', 'js/data.js', 'js/gfx.js', 'js/i18n.js', 'js/pet.js', 'js/push.js', 'js/sprites.js',
   '../tools/sdcard/mons/thumbs.bin',
 ];
 
@@ -53,4 +53,25 @@ self.addEventListener('fetch', (e) => {
       })
       .catch(() => caches.match(e.request, { ignoreSearch: true })),
   );
+});
+
+// reminders from the push server (../push-worker/)
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch {}
+  e.waitUntil(self.registration.showNotification(d.title || 'TamaPoke', {
+    body: d.body || '',
+    icon: 'icons/icon-192.png',
+    badge: 'icons/icon-192.png',
+    tag: 'tamapoke', // a newer reminder replaces the older one
+    renotify: true,
+  }));
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+    for (const c of list) if ('focus' in c) return c.focus();
+    return self.clients.openWindow('./');
+  }));
 });

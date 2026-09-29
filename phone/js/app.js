@@ -20,6 +20,10 @@ import {
   S, T, P, fmt, dexName, medalName, medalDesc, LANG_CODES, LANG_NAMES, getLang, setLang, isCjk,
 } from './i18n.js';
 import { sfxPlay, audioUnlock, audioEnabled, audioSetEnabled, audioSetSleeping } from './audio.js';
+import {
+  pushAvailable, pushNeedsInstall, pushBlocked, pushEnabled, pushInit, pushEnable, pushDisable,
+  pushSchedule, pushCancel, firstNeed, outOfQuietHours,
+} from './push.js';
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('screen');
@@ -96,6 +100,7 @@ async function setup() {
   applyLang();
   if (!pet.awaitingStarter() && !pet.isEgg()) ensureMon();
   new ResizeObserver(() => gfx.resize()).observe(canvas);
+  pushInit().then(pushCancel).catch(() => {}); // we're here: drop reminders from last time
   await thumbs.load();
   buildDexGrid();
   buildStarter();
@@ -673,9 +678,18 @@ $('stats-page').addEventListener('submit', (e) => {
 // ---------- Settings (the firmware's swipe-down screen) ----------
 function renderSettings() {
   const snd = audioEnabled();
+  let notify = '';
+  if (pushAvailable()) {
+    notify = `<div class="card"><div class="toggle"><span>${esc(P('NOTIFY'))}</span>` +
+      `<button class="switch" role="switch" aria-checked="${pushEnabled()}" aria-label="${esc(P('NOTIFY'))}" data-act="notify"></button></div>` +
+      (pushBlocked() ? `<p class="small">${esc(P('NOTIFY_BLOCKED'))}</p>` : '') + '</div>';
+  } else if (pushNeedsInstall()) {
+    notify = `<div class="card"><div class="toggle"><span>${esc(P('NOTIFY'))}</span></div><p class="small">${esc(P('NOTIFY_IOS'))}</p></div>`;
+  }
   $('settings-page').innerHTML =
     `<div class="card"><div class="toggle"><span>${esc(P('SOUND'))}</span>` +
     `<button class="switch" role="switch" aria-checked="${snd}" aria-label="${esc(P('SOUND'))}" data-act="sound"></button></div></div>` +
+    notify +
     `<div class="card"><h2>${esc(P('LANGUAGE'))}</h2><div class="langs">` +
     LANG_NAMES.map((n, i) => `<button class="btn${i >= 6 ? ' cjk' : ''}" data-lang="${i}" aria-pressed="${i === getLang()}">${n}</button>`).join('') +
     '</div></div>' +
@@ -687,6 +701,11 @@ $('settings-page').addEventListener('click', (e) => {
   if (b.dataset.act === 'sound') {
     audioSetEnabled(!audioEnabled());
     sfxPlay(SFX_TAP);
+  } else if (b.dataset.act === 'notify') {
+    sfxPlay(SFX_TAP);
+    b.disabled = true;
+    (pushEnabled() ? pushDisable() : pushEnable()).catch(() => {}).finally(renderSettings);
+    return;
   } else if (b.dataset.lang) {
     setLang(Number(b.dataset.lang));
     applyLang();
@@ -1327,11 +1346,29 @@ function statusMsg() {
 function onHide() {
   pet.lastSeenEpoch = epochNow();
   pet.save();
+  scheduleReminders();
 }
 function onShow() {
   // time away: merciful offline progression (floors, no slip-ups), like the board's RTC catch-up
   if (pet.syncClock(epochNow()) > 0) pet.lastTick = millis();
+  pushCancel();
   gfx.resize();
+}
+
+// push reminders while the app is away: the first need that runs low, then a
+// "misses you" a few hours later (not while it sleeps: its needs have floors)
+const NEED_MSG = { food: S.HUNGRY, hygiene: S.NEEDS_BATH, energy: S.EXHAUSTED, joy: S.SAD };
+function scheduleReminders() {
+  if (!pushEnabled()) return;
+  const events = [];
+  const now = Date.now();
+  const say = (at, id) => events.push({ at: outOfQuietHours(at), title: 'TamaPoke', body: `${petName()}: ${T(id)}` });
+  const f = firstNeed(pet);
+  if (f) say(now + f.minutes * 60000, NEED_MSG[f.need]);
+  if (!pet.sleeping && !pet.isEgg() && !pet.ceremony && !pet.awaitingStarter()) {
+    say((events.length ? events[0].at : now) + 4 * 3600000, S.SAD);
+  }
+  pushSchedule(events);
 }
 document.addEventListener('visibilitychange', () => (document.hidden ? onHide() : onShow()));
 window.addEventListener('pagehide', onHide);

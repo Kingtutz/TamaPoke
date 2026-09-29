@@ -34,4 +34,19 @@ p.ceremonyUntil = 1; p.update(performance.now());
 ok(p.isEgg() && !p.awaitingStarter(), 'after ceremony: new egg, no starter pick');
 let egg = {}; for (let i = 0; i < 2000; i++) { const d = p.pickEggSpecies(); egg[d] = 1; }
 ok(Object.keys(egg).length > 20, 'egg roll spreads over many species');
+// push reminders: predicted from the offline rules
+const { firstNeed, outOfQuietHours } = await import('../js/push.js');
+const r = new Pet(); r.begin(); r.starterPick = false; r.speciesId = 4; r.ceremony = CER_NONE;
+r.fullness = 80; r.joy = r.energy = r.hygiene = 100; r.sleeping = false;
+let fn = firstNeed(r);
+ok(fn && fn.need === 'food' && fn.minutes === 28, 'awake: hungry in 28 min (80 - 2/min < 25)');
+r.fullness = 10;
+fn = firstNeed(r);
+ok(fn && fn.need === 'hygiene' && fn.minutes === 76, 'a need already low is skipped (next: HYG at 100 - 1/min)');
+r.sleeping = true; r.fullness = 80;
+ok(firstNeed(r) === null, 'asleep: floors stay above 25, no reminder');
+const late = new Date(2026, 8, 29, 23, 30).getTime();
+ok(new Date(outOfQuietHours(late)).getHours() === 8 && new Date(outOfQuietHours(late)).getDate() === 30, '23:30 moves to 08:00 next day');
+const noon = new Date(2026, 8, 29, 12, 0).getTime();
+ok(outOfQuietHours(noon) === noon, 'daytime unchanged');
 process.exit(fails ? 1 : 0);

@@ -65,6 +65,9 @@ const PHONE = {
   RELEASE: ['Soltar', 'Release', 'Relâcher', 'Freilassen', 'Libera', 'Soltar', 'にがす', '놓아주기'],
   TAP_BALL: ['Toca la pelota!', 'Tap the ball!', 'Touche la balle !', 'Tipp den Ball!', 'Tocca la palla!', 'Toque na bola!', 'ボールをタップ!', '공을 탭!'],
   WAKE_FIRST: ['Despiértalo primero (Luz)', 'Wake it up first (Light)', "Réveille-le d'abord (Lumière)", 'Erst aufwecken (Licht)', 'Prima sveglialo (Luce)', 'Acorde-o primeiro (Luz)', 'まず おこしてね(でんき)', '먼저 깨워 주세요 (불)'],
+  NOTIFY: ['Avisos', 'Notifications', 'Notifications', 'Mitteilungen', 'Notifiche', 'Notificações', 'つうち', '알림'],
+  NOTIFY_IOS: ['Añade la app a la pantalla de inicio para activar los avisos', 'Add the app to your Home Screen to turn on notifications', "Ajoute l'app à l'écran d'accueil pour activer les notifications", 'Füge die App zum Home-Bildschirm hinzu, um Mitteilungen zu aktivieren', "Aggiungi l'app alla schermata Home per attivare le notifiche", 'Adicione o app à tela inicial para ativar as notificações', 'ホーム画面に ついかすると つうちが つかえます', '홈 화면에 추가하면 알림을 켤 수 있어요'],
+  NOTIFY_BLOCKED: ['Los avisos están bloqueados en los ajustes del navegador', 'Notifications are blocked in the browser settings', 'Les notifications sont bloquées dans les réglages du navigateur', 'Mitteilungen sind in den Browser-Einstellungen blockiert', 'Le notifiche sono bloccate nelle impostazioni del browser', 'As notificações estão bloqueadas nas configurações do navegador', 'ブラウザの せっていで つうちが オフです', '브라우저 설정에서 알림이 차단되어 있어요'],
   NOT_SEEN: ['Sin registrar', 'Not seen yet', 'Pas encore vu', 'Noch nicht gesehen', 'Non ancora visto', 'Ainda não visto', 'みつけていない', '아직 못 봤어요'],
 };
 export const P = (key) => PHONE[key][lang];

@@ -867,7 +867,7 @@ const GAME = {
   spin: 0.14,        // how much an off-centre tap pushes it sideways (fw 0.12)
   spinMax: 8.0,      // (fw 6.5)
   extraAt: [10, 25], // scores where one more ball joins (phone only: max 3 at once)
-  speed: 1.3,        // plays the whole game this much faster: same arcs, less time (fw 1)
+  speed: 1.5,        // plays the whole game this much faster: same arcs, less time (fw 1)
 };
 function startGame() {
   if (pet.isEgg() || pet.sleeping || pet.ceremony) return;

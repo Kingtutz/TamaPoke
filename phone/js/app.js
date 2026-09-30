@@ -854,7 +854,7 @@ const BALL_R = 24;
 // keeps going: the time between taps goes from ~2.3 s at the start to ~1.7 s
 // from score 25 (the firmware stays at ~2.8 s until 16, then ~2.2 s).
 const GAME = {
-  hitR: 52,          // tap distance that counts as a hit (fw 74)
+  hitR: 44,          // tap distance that counts as a hit (fw 74)
   grav0: 0.5,        // gravity at score 0 (fw 0.4)
   gravStep: 0.02,    // extra gravity per point (fw 0.013)
   gravMax: 1.0,      // (fw 0.8)
@@ -866,8 +866,10 @@ const GAME = {
   sideMax: 5.0,      // (fw 4)
   spin: 0.14,        // how much an off-centre tap pushes it sideways (fw 0.12)
   spinMax: 8.0,      // (fw 6.5)
-  extraAt: [10, 25], // scores where one more ball joins (phone only: max 3 at once)
-  speed: 1.5,        // plays the whole game this much faster: same arcs, less time (fw 1)
+  extraAt: [5, 15, 30], // scores where one more ball joins (phone only: max 4 at once)
+  speed0: 1.5,       // plays the whole game this much faster: same arcs, less time (fw 1)
+  speedStep: 0.01,   // ...and a bit faster with every point
+  speedMax: 2.0,     // reached at score 50
 };
 function startGame() {
   if (pet.isEgg() || pet.sleeping || pet.ceremony) return;
@@ -917,7 +919,7 @@ function stepGame() {
   const now = millis();
   let k = lastGameStep ? (now - lastGameStep) / 85 : 1;
   if (k > 3) k = 3;
-  k *= GAME.speed;
+  k *= Math.min(GAME.speed0 + gameScore * GAME.speedStep, GAME.speedMax);
   lastGameStep = now;
   const grav = Math.min(GAME.grav0 + gameScore * GAME.gravStep, GAME.gravMax);
   for (let i = 0; i < balls.length; i++) {

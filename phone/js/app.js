@@ -52,8 +52,10 @@ let bathUntil = 0, bathPending = false;
 const bubbles = Array.from({ length: 14 }, () => ({ x: 0, y: 0, r: 0, ph: 0 }));
 let feedMenuUntil = 0;
 // ball minigame
-let gameOpen = false, gameOverUntil = 0, ballX = 0, ballY = 0, ballVX = 0, ballVY = 0, gamePetX = CX;
+let gameOpen = false, gameOverUntil = 0, gamePetX = CX;
+let balls = []; // {x, y, vx, vy}: one at the start, more join as the score climbs
 let lastGameStep = 0, gameScore = 0, gameMisses = 0, hitX = 0, hitY = 0, hitTime = 0, gameNewHi = false;
+let extraBallAt = 0; // when the last extra ball joined (for the "+1" flash)
 // punching bag
 let sackOpen = false, sackUntil = 0, sackOverUntil = 0, sackHits = 0, sackShake = 0, sackGain = 0, sackNewHi = false;
 
@@ -864,6 +866,7 @@ const GAME = {
   sideMax: 5.0,      // (fw 4)
   spin: 0.14,        // how much an off-centre tap pushes it sideways (fw 0.12)
   spinMax: 8.0,      // (fw 6.5)
+  extraAt: [10, 25], // scores where one more ball joins (phone only: max 3 at once)
 };
 function startGame() {
   if (pet.isEgg() || pet.sleeping || pet.ceremony) return;
@@ -873,32 +876,39 @@ function startGame() {
   gameMisses = 0;
   gameNewHi = false;
   hitTime = 0;
+  extraBallAt = 0;
   gamePetX = CX;
   lastGameStep = millis();
-  respawnBall();
+  balls = [newBall()];
 }
 
-function respawnBall() {
-  ballX = 150 + random(166);
-  ballY = 150;
+function newBall() {
   const sp = Math.min(GAME.side0 + gameScore * GAME.sideStep, GAME.sideMax);
-  ballVX = random(2) ? sp : -sp;
-  ballVY = 0;
+  return { x: 150 + random(166), y: 150, vx: random(2) ? sp : -sp, vy: 0 };
 }
 
+// one tap hits the nearest ball in reach
 function gameTap(x, y) {
   if (gameOverUntil) return;
-  const dx = ballX - x, dy = ballY - y;
-  if (dx * dx + dy * dy < GAME.hitR * GAME.hitR) {
-    gameScore++;
-    sfxPlay(SFX_PLAY);
-    ballVY = -(GAME.lift0 + Math.min(gameScore, GAME.liftCapScore) * GAME.liftStep);
-    ballVX += dx * GAME.spin;
-    if (ballVX > GAME.spinMax) ballVX = GAME.spinMax;
-    if (ballVX < -GAME.spinMax) ballVX = -GAME.spinMax;
-    hitX = ballX;
-    hitY = ballY;
-    hitTime = millis();
+  let hit = null, best = GAME.hitR * GAME.hitR;
+  for (const b of balls) {
+    const d = (b.x - x) ** 2 + (b.y - y) ** 2;
+    if (d < best) { best = d; hit = b; }
+  }
+  if (!hit) return;
+  const dx = hit.x - x;
+  gameScore++;
+  sfxPlay(SFX_PLAY);
+  hit.vy = -(GAME.lift0 + Math.min(gameScore, GAME.liftCapScore) * GAME.liftStep);
+  hit.vx += dx * GAME.spin;
+  if (hit.vx > GAME.spinMax) hit.vx = GAME.spinMax;
+  if (hit.vx < -GAME.spinMax) hit.vx = -GAME.spinMax;
+  hitX = hit.x;
+  hitY = hit.y;
+  hitTime = millis();
+  if (balls.length <= GAME.extraAt.length && gameScore >= GAME.extraAt[balls.length - 1]) {
+    balls.push(newBall());
+    extraBallAt = millis();
   }
 }
 
@@ -908,22 +918,30 @@ function stepGame() {
   if (k > 3) k = 3;
   lastGameStep = now;
   const grav = Math.min(GAME.grav0 + gameScore * GAME.gravStep, GAME.gravMax);
-  ballVY += grav * k;
-  ballX += ballVX * k;
-  ballY += ballVY * k;
-  // the round screen's rim becomes the phone's walls and ceiling
-  if (ballX < BALL_R) { ballX = BALL_R; if (ballVX < 0) ballVX *= -0.85; }
-  if (ballX > W - BALL_R) { ballX = W - BALL_R; if (ballVX > 0) ballVX *= -0.85; }
-  if (ballY < BALL_R) { ballY = BALL_R; if (ballVY < 0) ballVY *= -0.85; }
-  if (ballY > H - 82) {
-    if (++gameMisses >= 3) {
-      gameNewHi = gameScore > pet.gameHi;
-      pet.playResult(gameScore);
-      sfxPlay(gameNewHi && gameScore > 0 ? SFX_MEDAL : SFX_LEVEL);
-      gameOverUntil = millis() + 4000;
-    } else respawnBall();
+  for (let i = 0; i < balls.length; i++) {
+    const b = balls[i];
+    b.vy += grav * k;
+    b.x += b.vx * k;
+    b.y += b.vy * k;
+    // the round screen's rim becomes the phone's walls and ceiling
+    if (b.x < BALL_R) { b.x = BALL_R; if (b.vx < 0) b.vx *= -0.85; }
+    if (b.x > W - BALL_R) { b.x = W - BALL_R; if (b.vx > 0) b.vx *= -0.85; }
+    if (b.y < BALL_R) { b.y = BALL_R; if (b.vy < 0) b.vy *= -0.85; }
+    if (b.y > H - 82) {
+      // every dropped ball costs a life; only that ball starts over
+      if (++gameMisses >= 3) {
+        gameNewHi = gameScore > pet.gameHi;
+        pet.playResult(gameScore);
+        sfxPlay(gameNewHi && gameScore > 0 ? SFX_MEDAL : SFX_LEVEL);
+        gameOverUntil = millis() + 4000;
+        return;
+      }
+      balls[i] = newBall();
+    }
   }
-  let chase = (ballX - gamePetX) * 0.12;
+  // the pet runs under the ball that is closest to falling
+  const low = balls.reduce((a, b) => (b.y > a.y ? b : a));
+  let chase = (low.x - gamePetX) * 0.12;
   if (chase > 7) chase = 7;
   if (chase < -7) chase = -7;
   gamePetX += chase * k;
@@ -997,8 +1015,18 @@ function renderGame() {
     printT(hint);
   }
 
+  // a new ball joined: "+1 (ball)" for a moment
+  if (extraBallAt && millis() - extraBallAt < 1500 && Math.floor((millis() - extraBallAt) / 150) % 2 === 0) {
+    gfx.setTextColor(UI_BAR_WARN);
+    setSize(3);
+    setCur(CX - 44, 158);
+    printT('+1');
+    drawMap('ICON_PLAY', CX + 4, 150, 2, false);
+  }
+
   if (pmd.loaded) {
-    let act = ballX > gamePetX + 4 ? PMD_WALKR : ballX < gamePetX - 4 ? PMD_WALKL : PMD_IDLE;
+    const low = balls.reduce((a, b) => (b.y > a.y ? b : a));
+    let act = low.x > gamePetX + 4 ? PMD_WALKR : low.x < gamePetX - 4 ? PMD_WALKL : PMD_IDLE;
     if (!pmd.has(act)) act = PMD_IDLE;
     drawPmdAct(act, Math.trunc(gamePetX), H - 72, millis(), true, false, 3);
   }
@@ -1009,7 +1037,7 @@ function renderGame() {
     gfx.drawCircle(hitX, hitY, rad, C565(0xff, 0xe7, 0x9f));
     gfx.drawCircle(hitX, hitY, rad - 2, C565(0xff, 0xd9, 0x8a));
   }
-  drawMap('ICON_PLAY', ballX - 24, ballY - 24, 3, false);
+  for (const b of balls) drawMap('ICON_PLAY', b.x - 24, b.y - 24, 3, false);
 }
 
 // ---------- punching bag (trains strength) ----------
@@ -1391,7 +1419,7 @@ window.addEventListener('pagehide', onHide);
 // debug hooks for the browser console (like the firmware's serial commands)
 window.tamapoke = {
   pet, sfxPlay,
-  game: () => ({ open: gameOpen, over: !!gameOverUntil, x: ballX, y: ballY, score: gameScore, misses: gameMisses, W, H }),
+  game: () => ({ open: gameOpen, over: !!gameOverUntil, balls: balls.map((b) => ({ x: b.x, y: b.y })), score: gameScore, misses: gameMisses, W, H }),
 };
 
 await document.fonts.load('12px "PressStart2P"').catch(() => {});

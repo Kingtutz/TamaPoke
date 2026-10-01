@@ -29,8 +29,8 @@ card) and are cached for offline use the first time each one is shown.
 |---|---|
 | Home: Feed / Play / Light / Bath | Feed opens a berry/candy menu; Play starts the ball game |
 | Home: tap the pet (or the egg) | pet it (hatch it) |
-| Home: hold the pet 3 s | release dialog (also: Stats → Release) |
-| Pokédex tab | scrolling grid of all 151; tap one for its sprite and base stats |
+| Home: hold the pet 3 s | send it to the Professor (also: Stats → Send to the Professor) |
+| Pokédex tab | scrolling grid of all 151; tap one for its sprite and base stats. A Poké Ball marks species you have at the Professor's: tap **Bring back** to swap |
 | Stats tab | profile, rename, bond, battle stats + Train strength, progress, medals |
 | Settings tab | sound, language |
 | ✕ in a mini-game | leave it without a result |
@@ -38,6 +38,10 @@ card) and are cached for offline use the first time each one is shown.
 ## Differences from the device
 
 - Time comes from the phone's clock, so there is no clock editor.
+- Released Pokémon, and those that say farewell, go to the Professor instead
+  of being gone: they wait there frozen in time and can be swapped back from
+  the Pokédex (not while you have an egg). One that runs away from neglect is
+  still gone for good.
 - Tabs and buttons replace the device's swipe gestures, and renaming uses the
   phone's own keyboard.
 - Closing or backgrounding the app counts as "powered off": on return the

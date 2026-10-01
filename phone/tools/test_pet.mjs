@@ -34,6 +34,25 @@ p.ceremonyUntil = 1; p.update(performance.now());
 ok(p.isEgg() && !p.awaitingStarter(), 'after ceremony: new egg, no starter pick');
 let egg = {}; for (let i = 0; i < 2000; i++) { const d = p.pickEggSpecies(); egg[d] = 1; }
 ok(Object.keys(egg).length > 20, 'egg roll spreads over many species');
+// the Professor's box
+{
+  globalThis.localStorage.d = {};
+  const b = new Pet(); b.begin(); b.chooseStarter(1); b.eggTap(); b.eggTap(); b.eggTap();
+  b.ageMinutes = 600; b.nick = 'BULBY'; b.bond = 40; b.fullness = 33;
+  b.release(); b.ceremonyUntil = 1; b.update(performance.now());
+  ok(b.isEgg() && b.box.length === 1 && b.box[0].speciesId === 1 && b.box[0].nick === 'BULBY', 'release: Pokemon goes to the box, new egg');
+  ok(!b.canSwap() && !b.swapFromBox(0), 'no swap while it is an egg');
+  b.eggTarget = 7; b.eggTap(); b.eggTap(); b.eggTap();
+  ok(b.speciesId === 7 && b.boxOf(1).length === 1, 'hatched the next one; box lists by species');
+  ok(b.swapFromBox(0) && b.speciesId === 1 && b.nick === 'BULBY' && b.ageMinutes === 600 && b.fullness === 33 && b.bond === 40,
+    'swap: comes back frozen in time');
+  ok(b.box.length === 1 && b.box[0].speciesId === 7, 'swap: the other one took its place');
+  const c = new Pet(); c.begin();
+  ok(c.box.length === 1 && c.speciesId === 1, 'box survives save/load');
+  b.neglectTicks = 999; b.startRunaway();
+  ok(b.box.length === 1, 'a runaway does not go to the box');
+}
+
 // push reminders: predicted from the offline rules
 const { firstNeed, outOfQuietHours } = await import('../js/push.js');
 const r = new Pet(); r.begin(); r.starterPick = false; r.speciesId = 4; r.ceremony = CER_NONE;

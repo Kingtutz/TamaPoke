@@ -428,9 +428,10 @@ $('modal-b').addEventListener('click', () => { sfxPlay(SFX_TAP); closeModal(moda
 // tapping outside the sheet just closes it, like the firmware's dialog timeout
 $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) closeModal(); });
 
+// "release" sends it to the Professor: it can be swapped back from the Pokedex
 function askRelease() {
   if (pet.isEgg() || pet.ceremony || pet.awaitingStarter()) return false;
-  ask(fmt(T(S.RELEASE_FMT), dexName(pet.speciesId)), T(S.YES), 'bad', T(S.NO), 'flat', () => {
+  ask(fmt(P('SEND_PROF_Q'), petName()), T(S.YES), 'bad', T(S.NO), 'flat', () => {
     showTab('home');
     pet.release();
   });
@@ -512,10 +513,12 @@ function drawMonFit(cv, m, actId, t, sil) {
 
 // ---------- Pokedex ----------
 function buildDexGrid() {
+  const ballIcon = mapDataUrl('ICON_PLAY');
   let html = '';
   for (let d = 1; d <= 151; d++) {
     html += `<button class="cell" data-dex="${d}"><canvas class="pixel" width="40" height="40"></canvas>` +
-      `<span class="no">${String(d).padStart(3, '0')}</span><span class="shiny" hidden>*</span></button>`;
+      `<span class="no">${String(d).padStart(3, '0')}</span><span class="shiny" hidden>*</span>` +
+      `<img class="boxed pixel" alt="" src="${ballIcon}" hidden></button>`;
   }
   $('dex-grid').innerHTML = html;
   $('dex-grid').addEventListener('click', (e) => {
@@ -530,11 +533,13 @@ function refreshDexGrid() {
   for (const cell of $('dex-grid').children) {
     const d = Number(cell.dataset.dex);
     const reg = pet.isRegistered(d);
-    const key = `${reg}${pet.isShinyRegistered(d)}${thumbs.loaded}`;
+    const boxed = pet.boxOf(d).length > 0;
+    const key = `${reg}${pet.isShinyRegistered(d)}${boxed}${thumbs.loaded}`;
     if (cell._k === key) continue;
     cell._k = key;
     cell.classList.toggle('unseen', !reg);
     cell.querySelector('.shiny').hidden = !pet.isShinyRegistered(d);
+    cell.querySelector('.boxed').hidden = !boxed; // one of these is at the Professor's
     cell.setAttribute('aria-label', reg ? dexName(d) : `#${d}`);
     paintThumb(cell.firstElementChild, d, !reg);
   }
@@ -554,7 +559,40 @@ function openDexDetail(dex) {
     ? [['HP', d.bHp], [T(S.STAT_ATK), d.bAtk], [T(S.STAT_DEF), d.bDef], [T(S.STAT_SPE), d.bSpe]]
       .map(([l, v]) => statRow(l, v, 160, cssColor(d.accent))).join('')
     : `<p class="small" style="text-align:center">${esc(P('NOT_SEEN'))}</p>`;
+  $('dex-box').innerHTML = dexBoxHtml(dex);
   $('dexdetail').hidden = false;
+}
+
+// the ones of this species you have had: with you, or at the Professor's
+const levelAt = (ageMinutes) => Math.min(999, 1 + Math.floor(ageMinutes / MINUTES_PER_LEVEL));
+const boxLabel = (p) => fmt(T(S.NAME_FMT), p.shiny ? '*' : '', p.nick || dexName(p.speciesId), levelAt(p.ageMinutes));
+function dexBoxHtml(dex) {
+  const here = pet.boxOf(dex);
+  const mine = !pet.isEgg() && pet.speciesId === dex;
+  if (!here.length && !mine) return '';
+  let h = '';
+  if (mine) h += `<div class="box-row"><span>${esc(boxLabel(pet))}</span><span class="small">${esc(P('WITH_YOU'))}</span></div>`;
+  if (here.length) {
+    h += `<p class="small">${esc(P('AT_PROF'))}</p>`;
+    for (const p of here) {
+      h += `<div class="box-row"><span>${esc(boxLabel(p))}</span>` +
+        `<button class="btn ok" data-swap="${p.index}"${pet.canSwap() ? '' : ' disabled'}>${esc(P('SWAP'))}</button></div>`;
+    }
+    if (pet.isEgg()) h += `<p class="small">${esc(P('HATCH_FIRST'))}</p>`;
+  }
+  return h;
+}
+
+function askSwap(i) {
+  const p = pet.box[i];
+  if (!p) return;
+  closeDexDetail();
+  ask(fmt(P('SWAP_Q'), petName(), p.nick || dexName(p.speciesId)), T(S.YES), 'ok', T(S.NO), 'flat', () => {
+    if (!pet.swapFromBox(i)) return;
+    monFor = -2; // load the returning one's sprite
+    sfxPlay(SFX_HEART);
+    showTab('home');
+  });
 }
 function drawDexDetail() {
   const reg = pet.isRegistered(detailDex);
@@ -570,9 +608,15 @@ function drawDexDetail() {
     }
   }
 }
-$('dexdetail').addEventListener('click', () => {
+function closeDexDetail() {
   $('dexdetail').hidden = true;
   galleryPmd.unload();
+}
+// a tap anywhere closes the sheet, except on a "bring back" button
+$('dexdetail').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-swap]');
+  if (b) { sfxPlay(SFX_TAP); askSwap(Number(b.dataset.swap)); return; }
+  closeDexDetail();
 });
 
 function statRow(label, val, max, color) {
@@ -648,7 +692,7 @@ function renderStats(force) {
 
       `<div class="card"><h2>${esc(fmt(T(S.MEDALS_FMT), got, MED_COUNT))}</h2><div class="medals">${medals}</div></div>` +
 
-      (pet.ceremony ? '' : `<button class="btn ghost" data-act="release">${esc(P('RELEASE'))}</button>`);
+      (pet.ceremony ? '' : `<button class="btn ghost" data-act="release">${esc(P('SEND_PROF'))}</button>`);
   }
   if (html === statsHtml && !force) return;
   statsHtml = html;

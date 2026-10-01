@@ -1,6 +1,6 @@
 // Offline support: the app shell is precached; each sprite file (~135 KB) is
 // cached the first time it is shown, so the pets you've met work offline.
-const SHELL = 'tamapoke-shell-v4';
+const SHELL = 'tamapoke-shell-v5';
 const SPRITES = 'tamapoke-sprites-v1';
 const SHELL_FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css', 'fonts/PressStart2P-Regular.ttf',

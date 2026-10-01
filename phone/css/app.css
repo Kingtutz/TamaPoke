@@ -297,6 +297,7 @@ body.playing #panel, body.playing #tabs, body.playing #hud { display: none; }
 .cell canvas { width: 86%; height: 86%; }
 .cell .no { position: absolute; left: 6px; bottom: 5px; font-size: 7px; color: var(--muted); }
 .cell .shiny { position: absolute; right: 5px; top: 4px; font-size: 10px; color: var(--warn); }
+.cell .boxed { position: absolute; right: 5px; bottom: 5px; width: 14px; height: 14px; }
 
 /* ---------- overlays ---------- */
 .overlay {
@@ -312,12 +313,18 @@ body.playing #panel, body.playing #tabs, body.playing #hud { display: none; }
   border-radius: 24px 24px 0 0;
   background: var(--bg);
   text-align: center;
+  max-height: 92dvh;
+  overflow-y: auto;
   animation: sheet .2s ease-out;
 }
 #modal-q { font-size: 14px; line-height: 1.6; margin: 4px 0 16px; }
 #dex-mon { width: 200px; height: 200px; }
 #dex-name { font-size: 14px; font-weight: 400; margin: 10px 0 16px; line-height: 1.5; }
 #dex-base { text-align: left; }
+#dex-box { text-align: left; margin-top: 6px; }
+#dex-box .small { margin: 14px 0 4px; }
+.box-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 10px; line-height: 1.5; padding: 8px 0; border-top: 2px dashed var(--track); }
+.box-row .btn { width: auto; margin: 0; padding: 10px 14px; font-size: 10px; flex: none; }
 @keyframes fade { from { opacity: 0; } }
 @keyframes sheet { from { transform: translateY(40%); } }
 

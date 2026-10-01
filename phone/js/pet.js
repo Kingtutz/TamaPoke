@@ -45,7 +45,16 @@ const SAVED = ['fullness', 'joy', 'energy', 'hygiene', 'poops', 'weight',
   'lastCareDay', 'bond', 'medals', 'totalMedals', 'lastMilestone', 'gameHi', 'strHi', 'nick',
   // phone-only additions: the firmware keeps these in RAM, but a phone app gets
   // killed in the background far more often than the board reboots
-  'evoDeclinedLv', 'farDeclinedAge', 'goodTicks', 'neglectTicks', 'mistakeCooldown', 'bondToday'];
+  'evoDeclinedLv', 'farDeclinedAge', 'goodTicks', 'neglectTicks', 'mistakeCooldown', 'bondToday',
+  'box'];
+
+// Phone-only: the Professor's box. A released Pokemon, or one that said
+// farewell, is kept there frozen in time and can be swapped back from the
+// Pokedex. These are the fields that belong to the Pokemon itself; the Pokedex,
+// streak and mini-game records stay with the player.
+const PET_FIELDS = ['speciesId', 'shiny', 'nick', 'ageMinutes', 'fullness', 'joy', 'energy', 'hygiene',
+  'poops', 'weight', 'geneAtk', 'geneDef', 'geneSpe', 'trAtk', 'trDef', 'trSpe', 'berryKnown',
+  'careMistakes', 'sleeping', 'bond', 'medals', 'evoDeclinedLv', 'farDeclinedAge', 'goodTicks', 'mistakeCooldown'];
 
 export class Pet {
   constructor(sfx = () => {}) {
@@ -74,6 +83,7 @@ export class Pet {
     this.neglectTicks = 0; this.goodTicks = 0; this.ceremonyUntil = 0;
     this.bondToday = 0; this.medalUntil = 0; this.milestoneUntil = 0;
     this.savedSeen = 0;
+    this.box = [];
   }
 
   begin() {
@@ -370,6 +380,7 @@ export class Pet {
 
   startCeremony(kind, hearts) {
     if (this.isEgg() || this.ceremony !== CER_NONE) return;
+    if (kind !== CER_RUNAWAY) this.box.push(this.snapshot()); // a runaway is gone for good
     this.lastEnd = kind;
     this.ceremony = kind;
     this.ceremonyUntil = millis() + CEREMONY_MS;
@@ -568,6 +579,38 @@ export class Pet {
     for (const k of SAVED) if (o[k] !== undefined) this[k] = o[k];
     this.savedSeen = o.seen || 0;
     if (this.speciesId >= 1) this.registerSpecies(this.speciesId);
+  }
+
+  snapshot() {
+    const o = {};
+    for (const k of PET_FIELDS) o[k] = this[k];
+    return o;
+  }
+
+  // the box entries of one species, with their index in the box
+  boxOf(dex) {
+    return this.box.map((p, index) => ({ ...p, index })).filter((p) => p.speciesId === dex);
+  }
+
+  canSwap() {
+    return !this.isEgg() && !this.starterPick && this.ceremony === CER_NONE && !this.evolving();
+  }
+
+  // the current Pokemon goes to the Professor and box[i] comes back as it left
+  swapFromBox(i) {
+    const back = this.box[i];
+    if (!back || !this.canSwap()) return false;
+    this.box[i] = this.snapshot();
+    for (const k of PET_FIELDS) if (back[k] !== undefined) this[k] = back[k];
+    this.neglectTicks = 0;
+    this.prevSpeciesId = -1;
+    this.eatUntil = this.heartUntil = this.evolveUntil = this.medalUntil = 0;
+    this.newMedal = 0;
+    // one that came back after its farewell waits a day before asking again
+    this.farDeclinedAge = Math.max(this.farDeclinedAge, this.ageMinutes + 1440);
+    this.registerSpecies(this.speciesId);
+    this.save();
+    return true;
   }
 
   factoryReset() {
